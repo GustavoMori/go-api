@@ -3,10 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"go-api/db"
 	"io"
 	"net/http"
 
-	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -52,9 +52,9 @@ func createPlayer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db, err := gorm.Open(postgres.Open("test.db"), &gorm.Config{})
+	entity := db.GormConnection()
 
-	db.Create(&Player{Name: requestBody.Name})
+	entity.Create(&Player{Name: requestBody.Name})
 
 	fmt.Println("Player with name = " + requestBody.Name + " was created")
 	w.Write([]byte("Player with name = " + requestBody.Name + " was created"))
