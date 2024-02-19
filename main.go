@@ -18,6 +18,8 @@ func main() {
 
 	mux.HandleFunc("GET /players/{id}", getPlayerID)
 
+	mux.HandleFunc("POST /players/create", createPlayer)
+
 	mux.HandleFunc("/", mainRoute)
 
 	db.Connection()

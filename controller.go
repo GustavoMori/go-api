@@ -1,9 +1,15 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 )
+
+type CreatePlayerRequestBody struct {
+	Name string `json:"name"`
+}
 
 func getPlayers(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("GET of players")
@@ -15,6 +21,31 @@ func getPlayerID(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("GET player with id = " + id)
 	w.Write([]byte("Player with id = " + id))
+}
+
+func createPlayer(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	defer r.Body.Close()
+
+	if err != nil {
+		http.Error(w, "Error reading the request body", http.StatusBadRequest)
+		return
+	}
+
+	var requestBody CreatePlayerRequestBody
+
+	if err := json.Unmarshal(body, &requestBody); err != nil {
+		http.Error(w, "Error decoding the request body", http.StatusBadRequest)
+		return
+	}
+
+	if requestBody.Name == "" {
+		http.Error(w, "Name is invalid", http.StatusBadRequest)
+		return
+	}
+
+	fmt.Println("Player with name = " + requestBody.Name + " was created")
+	w.Write([]byte("Player with name = " + requestBody.Name + " was created"))
 }
 
 func mainRoute(w http.ResponseWriter, r *http.Request) {
