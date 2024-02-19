@@ -11,7 +11,7 @@ import (
 )
 
 func RunMigrates() {
-	driver, err := postgres.WithInstance(Connection(), &postgres.Config{})
+	driver, err := postgres.WithInstance(connection(), &postgres.Config{})
 	if err != nil {
 		fmt.Println("Connection error:", err)
 	}

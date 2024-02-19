@@ -5,10 +5,18 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 type CreatePlayerRequestBody struct {
 	Name string `json:"name"`
+}
+
+type Player struct {
+	gorm.Model
+	Name string
 }
 
 func getPlayers(w http.ResponseWriter, r *http.Request) {
@@ -43,6 +51,10 @@ func createPlayer(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Name is invalid", http.StatusBadRequest)
 		return
 	}
+
+	db, err := gorm.Open(postgres.Open("test.db"), &gorm.Config{})
+
+	db.Create(&Player{Name: requestBody.Name})
 
 	fmt.Println("Player with name = " + requestBody.Name + " was created")
 	w.Write([]byte("Player with name = " + requestBody.Name + " was created"))

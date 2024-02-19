@@ -4,26 +4,40 @@ import (
 	"database/sql"
 	"fmt"
 
-	_ "github.com/lib/pq"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func init() {
 	RunMigrates()
 }
 
-func Connection() *sql.DB {
+func connection() *sql.DB {
+	gormDb := GormConnection()
+
+	sqlDb, _ := gormDb.DB()
+	return sqlDb
+}
+
+func GormConnection() *gorm.DB {
 	// String conection
-	connStr := "user=myuser dbname=mydatabase password=mypassword sslmode=disable"
+	dsn := "host=localhost user=myuser dbname=mydatabase password=mypassword sslmode=disable"
 
 	// Open conection
-	db, err := sql.Open("postgres", connStr)
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		fmt.Println("Connecting error with db:", err)
 		return nil
 	}
 
 	// Verify if conection is enable
-	err = db.Ping()
+	sqlDB, err := db.DB()
+	if err != nil {
+		fmt.Println("sqlDB error", err)
+	}
+
+	err = sqlDB.Ping()
+
 	if err != nil {
 		fmt.Println("Connection error test with db:", err)
 		return nil

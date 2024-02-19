@@ -22,7 +22,7 @@ func main() {
 
 	mux.HandleFunc("/", mainRoute)
 
-	db.Connection()
+	db.GormConnection()
 
 	http.ListenAndServe(":5050", mux)
 }
