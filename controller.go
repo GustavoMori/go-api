@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -129,6 +130,31 @@ func updatePlayer(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("Updated player with id = " + strID)
 	w.Write([]byte("New player name = " + player.Name))
+}
+
+func deletePlayer(w http.ResponseWriter, r *http.Request) {
+	strID := r.PathValue("id")
+
+	id, err := strconv.Atoi(strID)
+	if err != nil {
+		http.Error(w, "NaN ID", http.StatusBadRequest)
+		return
+	}
+
+	var player = Player{ID: id}
+	gorm := db.GormConnection()
+
+	tx := gorm.Scopes(db.NotBeRonaldinho).Model(&player).Update("deleted_at", time.Now())
+
+	fmt.Println(tx.RowsAffected == 0)
+
+	if tx.RowsAffected == 0 {
+		http.Error(w, "400", http.StatusBadRequest)
+		return
+	}
+
+	fmt.Println("Player was deleted")
+	w.Write([]byte("Player was deleted"))
 }
 
 func mainRoute(w http.ResponseWriter, r *http.Request) {

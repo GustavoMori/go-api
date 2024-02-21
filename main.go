@@ -22,6 +22,8 @@ func main() {
 
 	mux.HandleFunc("PUT /players/{id}", updatePlayer)
 
+	mux.HandleFunc("DELETE /players/{id}", deletePlayer)
+
 	mux.HandleFunc("/", mainRoute)
 
 	db.GormConnection()
