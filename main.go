@@ -16,9 +16,11 @@ func main() {
 
 	mux.HandleFunc("GET /players", getPlayers)
 
-	mux.HandleFunc("GET /players/{id}", getPlayerID)
+	mux.HandleFunc("GET /players/{id}", getPlayerByID)
 
 	mux.HandleFunc("POST /players/create", createPlayer)
+
+	mux.HandleFunc("PUT /players/{id}", updatePlayer)
 
 	mux.HandleFunc("/", mainRoute)
 
