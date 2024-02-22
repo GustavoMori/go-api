@@ -1,31 +1,24 @@
-package main
+package handlers
 
 import (
 	"encoding/json"
 	"fmt"
 	"go-api/db"
+	"go-api/internal/structs"
 	"io"
 	"net/http"
 	"strconv"
 	"time"
-
-	"gorm.io/gorm"
 )
 
 type PlayerRequestBody struct {
 	Name string `json:"name"`
 }
 
-type Player struct {
-	gorm.Model
-	ID   int
-	Name string
-}
-
-func getPlayers(w http.ResponseWriter, r *http.Request) {
+func GetPlayers(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("GET of players")
 
-	var players []Player
+	var players []structs.Player
 	gorm := db.GormConnection()
 
 	tx := gorm.Find(&players)
@@ -34,12 +27,17 @@ func getPlayers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, player := range players {
-		w.Write([]byte("Player name = " + player.Name))
+	response, err := json.Marshal(players)
+	if err != nil {
+		http.Error(w, "500", http.StatusBadRequest)
+		return
 	}
+
+	w.Header().Add("Content-Type", "application/json")
+	w.Write(response)
 }
 
-func getPlayerByID(w http.ResponseWriter, r *http.Request) {
+func GetPlayerByID(w http.ResponseWriter, r *http.Request) {
 	strID := r.PathValue("id")
 
 	id, err := strconv.Atoi(strID)
@@ -48,7 +46,7 @@ func getPlayerByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var player = Player{ID: id}
+	var player = structs.Player{ID: id}
 	gorm := db.GormConnection()
 
 	tx := gorm.First(&player)
@@ -57,11 +55,18 @@ func getPlayerByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	response, err := json.Marshal(player)
+	if err != nil {
+		http.Error(w, "500", http.StatusBadRequest)
+		return
+	}
+
 	fmt.Println("GET player with id = " + strID)
-	w.Write([]byte("Player name = " + player.Name))
+	w.Header().Add("Content-Type", "application/json")
+	w.Write(response)
 }
 
-func createPlayer(w http.ResponseWriter, r *http.Request) {
+func CreatePlayer(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 
@@ -71,26 +76,24 @@ func createPlayer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var requestBody PlayerRequestBody
-
-	if err := json.Unmarshal(body, &requestBody); err != nil {
+	err = json.Unmarshal(body, &requestBody)
+	if err != nil {
 		http.Error(w, "Error decoding the request body", http.StatusBadRequest)
 		return
 	}
-
 	if requestBody.Name == "" {
 		http.Error(w, "Name is invalid", http.StatusBadRequest)
 		return
 	}
 
 	gorm := db.GormConnection()
-
-	gorm.Create(&Player{Name: requestBody.Name})
+	gorm.Create(&structs.Player{Name: requestBody.Name})
 
 	fmt.Println("Player with name = " + requestBody.Name + " was created")
 	w.Write([]byte("Player with name = " + requestBody.Name + " was created"))
 }
 
-func updatePlayer(w http.ResponseWriter, r *http.Request) {
+func UpdatePlayer(w http.ResponseWriter, r *http.Request) {
 	strID := r.PathValue("id")
 
 	id, err := strconv.Atoi(strID)
@@ -118,7 +121,7 @@ func updatePlayer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var player = Player{ID: id}
+	var player = structs.Player{ID: id}
 
 	gorm := db.GormConnection()
 
@@ -132,7 +135,7 @@ func updatePlayer(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("New player name = " + player.Name))
 }
 
-func deletePlayer(w http.ResponseWriter, r *http.Request) {
+func DeletePlayer(w http.ResponseWriter, r *http.Request) {
 	strID := r.PathValue("id")
 
 	id, err := strconv.Atoi(strID)
@@ -141,7 +144,7 @@ func deletePlayer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var player = Player{ID: id}
+	var player = structs.Player{ID: id}
 	gorm := db.GormConnection()
 
 	tx := gorm.Scopes(db.NotBeRonaldinho).Model(&player).Update("deleted_at", time.Now())
@@ -157,7 +160,7 @@ func deletePlayer(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Player was deleted"))
 }
 
-func mainRoute(w http.ResponseWriter, r *http.Request) {
+func MainRoute(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Main route")
 	w.Write([]byte("Main route"))
 }
