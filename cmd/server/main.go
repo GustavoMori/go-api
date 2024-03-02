@@ -18,7 +18,9 @@ func main() {
 
 	mux.HandleFunc("/", handlers.MainRoute)
 
-	db.GormConnection()
+	dsn := db.MakeDSN("localhost", "myuser", "mydatabase", "mypassword")
+	db.InitDB(dsn)
+	db.RunMigrates()
 
 	http.ListenAndServe(":5050", mux)
 }

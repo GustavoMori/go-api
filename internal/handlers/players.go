@@ -19,7 +19,7 @@ func GetPlayers(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("GET of players")
 
 	var players []structs.Player
-	gorm := db.GormConnection()
+	gorm := db.DB
 
 	tx := gorm.Find(&players)
 	if tx.Error != nil {
@@ -47,7 +47,7 @@ func GetPlayerByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var player = structs.Player{ID: id}
-	gorm := db.GormConnection()
+	gorm := db.DB
 
 	tx := gorm.First(&player)
 	if tx.Error != nil {
@@ -86,7 +86,7 @@ func CreatePlayer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	gorm := db.GormConnection()
+	gorm := db.DB
 	gorm.Create(&structs.Player{Name: requestBody.Name})
 
 	fmt.Println("Player with name = " + requestBody.Name + " was created")
@@ -123,7 +123,7 @@ func UpdatePlayer(w http.ResponseWriter, r *http.Request) {
 
 	var player = structs.Player{ID: id}
 
-	gorm := db.GormConnection()
+	gorm := db.DB
 
 	tx := gorm.Model(&player).Update("name", requestBody.Name)
 	if tx.Error != nil {
@@ -145,7 +145,7 @@ func DeletePlayer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var player = structs.Player{ID: id}
-	gorm := db.GormConnection()
+	gorm := db.DB
 
 	tx := gorm.Scopes(db.NotBeRonaldinho).Model(&player).Update("deleted_at", time.Now())
 

@@ -8,20 +8,15 @@ import (
 	"gorm.io/gorm"
 )
 
-func init() {
-	RunMigrates()
-}
+var DB *gorm.DB
 
 func connection() *sql.DB {
-	gormDb := GormConnection()
-
-	sqlDb, _ := gormDb.DB()
+	sqlDb, _ := DB.DB()
 	return sqlDb
 }
 
-func GormConnection() *gorm.DB {
-	// String conection
-	dsn := "host=localhost user=myuser dbname=mydatabase password=mypassword sslmode=disable"
+func InitDB(dsn string) *gorm.DB {
+	// dsn := "host=localhost user=myuser dbname=mydatabase password=mypassword sslmode=disable"
 
 	// Open conection
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
@@ -44,6 +39,11 @@ func GormConnection() *gorm.DB {
 	}
 
 	fmt.Println("Connection with Postgres was successfull :D")
+	DB = db
 
 	return db
+}
+
+func MakeDSN(host, user, dbname, password string) string {
+	return fmt.Sprintf("host=%s user=%s dbname=%s password=%s sslmode=disable", host, user, dbname, password)
 }
